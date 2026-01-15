@@ -8,4 +8,3 @@ name = "role_1_name"
 env = {}
 
 [config]
-# Add your assessment config here
