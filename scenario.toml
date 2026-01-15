@@ -1,16 +1,10 @@
 [green_agent]
-agentbeats_id = ""019bc145-7c61-7f31-b871-06a84478ead8""
+agentbeats_id = "019bc145-7c61-7f31-b871-06a84478ead8"
 env = { API_KEY = "${GITHUB_SECRET_NAME}", LOG_LEVEL = "INFO" }
 
 [[participants]]
-agentbeats_id = "3308ef96-89f7-4de2-9608-f45f3d37864b
-"
+agentbeats_id = "3308ef96-89f7-4de2-9608-f45f3d37864b"
 name = "role_1_name"
-env = {}
-
-[[participants]]
-agentbeats_id = ""
-name = "role_2_name"
 env = {}
 
 [config]
