@@ -8,3 +8,7 @@ name = "purple_placeholder"
 env = {}
 
 [config]
+# 关键：给 client 一个明确的 host/port，避免生成错误 command
+host = "green-agent"
+port = 8000
+timeout_seconds = 300
