@@ -1,15 +1,11 @@
 [green_agent]
 agentbeats_id = "019bc145-7c61-7f31-b871-06a84478ead8"
-env = { LOG_LEVEL = "INFO" }
+env = { API_KEY = "${GITHUB_SECRET_NAME}", LOG_LEVEL = "INFO" }
 
 [[participants]]
-agentbeats_id = "019bc3e1-463c-7712-b376-7e71ccdcdaa3"
-name = "purple_placeholder"
+name = "purple_agent_1"
+agentbeats_id = "019bc40a-9f04-73d3-834f-30763fce76aa"
 env = {}
 
 [config]
-# 关键：给 client 一个明确的 host/port，避免生成错误 command
-host = "green-agent"
-port = 8000
-timeout_seconds = 300
-## good
+# keep empty for now
