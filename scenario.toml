@@ -1,11 +1,11 @@
 [green_agent]
 agentbeats_id = "019bc145-7c61-7f31-b871-06a84478ead8"
-env = { API_KEY = "${GITHUB_SECRET_NAME}", LOG_LEVEL = "INFO" }
+env = { ZHIPUAI_API_KEY = "${ZHIPUAI_API_KEY}", LOG_LEVEL = "INFO" }
 
 [[participants]]
-name = "purple_agent_1"
 agentbeats_id = "019bc40a-9f04-73d3-834f-30763fce76aa"
-env = {env = { API_KEY = "${ZHIPUAI_API_KEY}", LOG_LEVEL = "INFO" }
+name = "purple_agent_1"
+env = {}
 
 [config]
-# keep empty for now
+# ...
