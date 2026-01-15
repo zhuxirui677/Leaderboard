@@ -3,8 +3,9 @@ agentbeats_id = "019bc145-7c61-7f31-b871-06a84478ead8"
 env = { LOG_LEVEL = "INFO" }
 
 [[participants]]
-agentbeats_id = "3308ef96-89f7-4de2-9608-f45f3d37864b"
-name = "role_1_name"
+agentbeats_id = "019bc3da-00a0-7930-9e2d-e46dad026684"
+name = "purple_agent_1"
 env = {}
 
 [config]
+# assessment config (can be empty for now)
