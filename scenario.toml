@@ -5,7 +5,7 @@ env = { API_KEY = "${GITHUB_SECRET_NAME}", LOG_LEVEL = "INFO" }
 [[participants]]
 name = "purple_agent_1"
 agentbeats_id = "019bc40a-9f04-73d3-834f-30763fce76aa"
-env = {}
+env = {env = { API_KEY = "${ZHIPUAI_API_KEY}", LOG_LEVEL = "INFO" }
 
 [config]
 # keep empty for now
