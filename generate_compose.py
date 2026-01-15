@@ -31,16 +31,24 @@ except ImportError:
 
 AGENTBEATS_API_URL = "https://agentbeats.dev/api/agents"
 
-# IMPORTANT:
-# These are the expected CLIs inside the agent images.
-# - Green/Purple agent images are expected to have an entrypoint/command that supports:
-#   agent --host 0.0.0.0 --port 9009 --card-url ...
-# - agentbeats-client image is expected to have an executable `agentbeats-client`.
-#
-# To avoid "exec: --host: executable file not found", we always include the executable
-# name as argv[0] in `command`.
-AGENT_SERVER_CMD = "agent"              # common convention for A2A agents
-AGENTBEATS_CLIENT_CMD = "agentbeats-client"
+
+def fetch_agent_info(agentbeats_id: str) -> dict:
+    """Fetch agent info from agentbeats.dev API."""
+    url = f"{AGENTBEATS_API_URL}/{agentbeats_id}"
+    try:
+        response = requests.get(url, timeout=30)
+        response.raise_for_status()
+        return response.json()
+    except requests.exceptions.HTTPError as e:
+        print(f"Error: Failed to fetch agent {agentbeats_id}: {e}")
+        sys.exit(1)
+    except requests.exceptions.JSONDecodeError:
+        print(f"Error: Invalid JSON response for agent {agentbeats_id}")
+        sys.exit(1)
+    except requests.exceptions.RequestException as e:
+        print(f"Error: Request failed for agent {agentbeats_id}: {e}")
+        sys.exit(1)
+
 
 COMPOSE_PATH = "docker-compose.yml"
 A2A_SCENARIO_PATH = "a2a-scenario.toml"
@@ -49,6 +57,8 @@ ENV_PATH = ".env.example"
 DEFAULT_PORT = 9009
 DEFAULT_ENV_VARS = {"PYTHONUNBUFFERED": "1"}
 
+# NOTE:
+# We REMOVED "--card-url" from commands because uvicorn (and many agents) do not support it.
 COMPOSE_TEMPLATE = """# Auto-generated from scenario.toml
 
 services:
@@ -56,7 +66,7 @@ services:
     image: {green_image}
     platform: linux/amd64
     container_name: green-agent
-    command: ["{agent_cmd}", "--host", "0.0.0.0", "--port", "{green_port}", "--card-url", "http://green-agent:{green_port}"]
+    command: ["--host", "0.0.0.0", "--port", "{green_port}"]
     environment:{green_env}
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:{green_port}/.well-known/agent-card.json"]
@@ -76,7 +86,7 @@ services:
     volumes:
       - ./a2a-scenario.toml:/app/scenario.toml
       - ./output:/app/output
-    command: ["{client_cmd}", "scenario.toml", "output/results.json"]
+    command: ["scenario.toml", "output/results.json"]
     depends_on:{client_depends}
     networks:
       - agent-network
@@ -86,11 +96,13 @@ networks:
     driver: bridge
 """
 
+# NOTE:
+# We REMOVED "--card-url" from commands because uvicorn (and many agents) do not support it.
 PARTICIPANT_TEMPLATE = """  {name}:
     image: {image}
     platform: linux/amd64
     container_name: {name}
-    command: ["{agent_cmd}", "--host", "0.0.0.0", "--port", "{port}", "--card-url", "http://{name}:{port}"]
+    command: ["--host", "0.0.0.0", "--port", "{port}"]
     environment:{env}
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:{port}/.well-known/agent-card.json"]
@@ -107,24 +119,6 @@ endpoint = "http://green-agent:{green_port}"
 
 {participants}
 {config}"""
-
-
-def fetch_agent_info(agentbeats_id: str) -> dict:
-    """Fetch agent info from agentbeats.dev API."""
-    url = f"{AGENTBEATS_API_URL}/{agentbeats_id}"
-    try:
-        response = requests.get(url, timeout=30)
-        response.raise_for_status()
-        return response.json()
-    except requests.exceptions.HTTPError as e:
-        print(f"Error: Failed to fetch agent {agentbeats_id}: {e}")
-        sys.exit(1)
-    except requests.exceptions.JSONDecodeError:
-        print(f"Error: Invalid JSON response for agent {agentbeats_id}")
-        sys.exit(1)
-    except requests.exceptions.RequestException as e:
-        print(f"Error: Request failed for agent {agentbeats_id}: {e}")
-        sys.exit(1)
 
 
 def resolve_image(agent: dict, name: str) -> None:
@@ -160,7 +154,7 @@ def parse_scenario(scenario_path: Path) -> dict[str, Any]:
 
     # Check for duplicate participant names
     names = [p.get("name") for p in participants]
-    duplicates = [name for name in set(names) if names.count(name) > 1]
+    duplicates = [n for n in set(names) if names.count(n) > 1]
     if duplicates:
         print(f"Error: Duplicate participant names found: {', '.join(duplicates)}")
         print("Each participant must have a unique name.")
@@ -179,8 +173,10 @@ def format_env_vars(env_dict: dict[str, Any]) -> str:
     return "\n" + "\n".join(lines)
 
 
-def format_depends_on(services: list) -> str:
-    lines = []
+def format_depends_on(services: list[str]) -> str:
+    if not services:
+        return " {}"
+    lines: list[str] = []
     for service in services:
         lines.append(f"      {service}:")
         lines.append("        condition: service_healthy")
@@ -200,7 +196,6 @@ def generate_docker_compose(scenario: dict[str, Any]) -> str:
                 image=p["image"],
                 port=DEFAULT_PORT,
                 env=format_env_vars(p.get("env", {})),
-                agent_cmd=AGENT_SERVER_CMD,
             )
             for p in participants
         ]
@@ -215,23 +210,21 @@ def generate_docker_compose(scenario: dict[str, Any]) -> str:
         green_depends=format_depends_on(participant_names),
         participant_services=participant_services,
         client_depends=format_depends_on(all_services),
-        agent_cmd=AGENT_SERVER_CMD,
-        client_cmd=AGENTBEATS_CLIENT_CMD,
     )
 
 
 def generate_a2a_scenario(scenario: dict[str, Any]) -> str:
     participants = scenario.get("participants", [])
 
-    participant_lines = []
+    participant_lines: list[str] = []
     for p in participants:
         lines = [
             "[[participants]]",
-            f"role = \"{p['name']}\"",
-            f"endpoint = \"http://{p['name']}:{DEFAULT_PORT}\"",
+            f'role = "{p["name"]}"',
+            f'endpoint = "http://{p["name"]}:{DEFAULT_PORT}"',
         ]
         if "agentbeats_id" in p:
-            lines.append(f"agentbeats_id = \"{p['agentbeats_id']}\"")
+            lines.append(f'agentbeats_id = "{p["agentbeats_id"]}"')
         participant_lines.append("\n".join(lines) + "\n")
 
     config_section = scenario.get("config", {})
@@ -248,7 +241,7 @@ def generate_env_file(scenario: dict[str, Any]) -> str:
     green = scenario["green_agent"]
     participants = scenario.get("participants", [])
 
-    secrets = set()
+    secrets: set[str] = set()
 
     # Extract secrets from ${VAR} patterns in env values
     env_var_pattern = re.compile(r"\$\{([^}]+)\}")
@@ -265,10 +258,7 @@ def generate_env_file(scenario: dict[str, Any]) -> str:
     if not secrets:
         return ""
 
-    lines = []
-    for secret in sorted(secrets):
-        lines.append(f"{secret}=")
-
+    lines = [f"{secret}=" for secret in sorted(secrets)]
     return "\n".join(lines) + "\n"
 
 
