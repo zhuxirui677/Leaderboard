@@ -15,11 +15,13 @@ except ImportError:
     except ImportError:
         print("Error: tomli required. Install with: pip install tomli")
         sys.exit(1)
+
 try:
     import tomli_w
 except ImportError:
     print("Error: tomli-w required. Install with: pip install tomli-w")
     sys.exit(1)
+
 try:
     import requests
 except ImportError:
@@ -29,24 +31,16 @@ except ImportError:
 
 AGENTBEATS_API_URL = "https://agentbeats.dev/api/agents"
 
-
-def fetch_agent_info(agentbeats_id: str) -> dict:
-    """Fetch agent info from agentbeats.dev API."""
-    url = f"{AGENTBEATS_API_URL}/{agentbeats_id}"
-    try:
-        response = requests.get(url, timeout=30)
-        response.raise_for_status()
-        return response.json()
-    except requests.exceptions.HTTPError as e:
-        print(f"Error: Failed to fetch agent {agentbeats_id}: {e}")
-        sys.exit(1)
-    except requests.exceptions.JSONDecodeError:
-        print(f"Error: Invalid JSON response for agent {agentbeats_id}")
-        sys.exit(1)
-    except requests.exceptions.RequestException as e:
-        print(f"Error: Request failed for agent {agentbeats_id}: {e}")
-        sys.exit(1)
-
+# IMPORTANT:
+# These are the expected CLIs inside the agent images.
+# - Green/Purple agent images are expected to have an entrypoint/command that supports:
+#   agent --host 0.0.0.0 --port 9009 --card-url ...
+# - agentbeats-client image is expected to have an executable `agentbeats-client`.
+#
+# To avoid "exec: --host: executable file not found", we always include the executable
+# name as argv[0] in `command`.
+AGENT_SERVER_CMD = "agent"              # common convention for A2A agents
+AGENTBEATS_CLIENT_CMD = "agentbeats-client"
 
 COMPOSE_PATH = "docker-compose.yml"
 A2A_SCENARIO_PATH = "a2a-scenario.toml"
@@ -62,7 +56,7 @@ services:
     image: {green_image}
     platform: linux/amd64
     container_name: green-agent
-    command: ["--host", "0.0.0.0", "--port", "{green_port}", "--card-url", "http://green-agent:{green_port}"]
+    command: ["{agent_cmd}", "--host", "0.0.0.0", "--port", "{green_port}", "--card-url", "http://green-agent:{green_port}"]
     environment:{green_env}
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:{green_port}/.well-known/agent-card.json"]
@@ -82,7 +76,7 @@ services:
     volumes:
       - ./a2a-scenario.toml:/app/scenario.toml
       - ./output:/app/output
-    command: ["scenario.toml", "output/results.json"]
+    command: ["{client_cmd}", "scenario.toml", "output/results.json"]
     depends_on:{client_depends}
     networks:
       - agent-network
@@ -96,7 +90,7 @@ PARTICIPANT_TEMPLATE = """  {name}:
     image: {image}
     platform: linux/amd64
     container_name: {name}
-    command: ["--host", "0.0.0.0", "--port", "{port}", "--card-url", "http://{name}:{port}"]
+    command: ["{agent_cmd}", "--host", "0.0.0.0", "--port", "{port}", "--card-url", "http://{name}:{port}"]
     environment:{env}
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:{port}/.well-known/agent-card.json"]
@@ -113,6 +107,24 @@ endpoint = "http://green-agent:{green_port}"
 
 {participants}
 {config}"""
+
+
+def fetch_agent_info(agentbeats_id: str) -> dict:
+    """Fetch agent info from agentbeats.dev API."""
+    url = f"{AGENTBEATS_API_URL}/{agentbeats_id}"
+    try:
+        response = requests.get(url, timeout=30)
+        response.raise_for_status()
+        return response.json()
+    except requests.exceptions.HTTPError as e:
+        print(f"Error: Failed to fetch agent {agentbeats_id}: {e}")
+        sys.exit(1)
+    except requests.exceptions.JSONDecodeError:
+        print(f"Error: Invalid JSON response for agent {agentbeats_id}")
+        sys.exit(1)
+    except requests.exceptions.RequestException as e:
+        print(f"Error: Request failed for agent {agentbeats_id}: {e}")
+        sys.exit(1)
 
 
 def resolve_image(agent: dict, name: str) -> None:
@@ -171,7 +183,7 @@ def format_depends_on(services: list) -> str:
     lines = []
     for service in services:
         lines.append(f"      {service}:")
-        lines.append(f"        condition: service_healthy")
+        lines.append("        condition: service_healthy")
     return "\n" + "\n".join(lines)
 
 
@@ -181,15 +193,18 @@ def generate_docker_compose(scenario: dict[str, Any]) -> str:
 
     participant_names = [p["name"] for p in participants]
 
-    participant_services = "\n".join([
-        PARTICIPANT_TEMPLATE.format(
-            name=p["name"],
-            image=p["image"],
-            port=DEFAULT_PORT,
-            env=format_env_vars(p.get("env", {}))
-        )
-        for p in participants
-    ])
+    participant_services = "\n".join(
+        [
+            PARTICIPANT_TEMPLATE.format(
+                name=p["name"],
+                image=p["image"],
+                port=DEFAULT_PORT,
+                env=format_env_vars(p.get("env", {})),
+                agent_cmd=AGENT_SERVER_CMD,
+            )
+            for p in participants
+        ]
+    )
 
     all_services = ["green-agent"] + participant_names
 
@@ -199,18 +214,19 @@ def generate_docker_compose(scenario: dict[str, Any]) -> str:
         green_env=format_env_vars(green.get("env", {})),
         green_depends=format_depends_on(participant_names),
         participant_services=participant_services,
-        client_depends=format_depends_on(all_services)
+        client_depends=format_depends_on(all_services),
+        agent_cmd=AGENT_SERVER_CMD,
+        client_cmd=AGENTBEATS_CLIENT_CMD,
     )
 
 
 def generate_a2a_scenario(scenario: dict[str, Any]) -> str:
-    green = scenario["green_agent"]
     participants = scenario.get("participants", [])
 
     participant_lines = []
     for p in participants:
         lines = [
-            f"[[participants]]",
+            "[[participants]]",
             f"role = \"{p['name']}\"",
             f"endpoint = \"http://{p['name']}:{DEFAULT_PORT}\"",
         ]
@@ -224,7 +240,7 @@ def generate_a2a_scenario(scenario: dict[str, Any]) -> str:
     return A2A_SCENARIO_TEMPLATE.format(
         green_port=DEFAULT_PORT,
         participants="\n".join(participant_lines),
-        config="\n".join(config_lines)
+        config="\n".join(config_lines),
     )
 
 
@@ -235,7 +251,7 @@ def generate_env_file(scenario: dict[str, Any]) -> str:
     secrets = set()
 
     # Extract secrets from ${VAR} patterns in env values
-    env_var_pattern = re.compile(r'\$\{([^}]+)\}')
+    env_var_pattern = re.compile(r"\$\{([^}]+)\}")
 
     for value in green.get("env", {}).values():
         for match in env_var_pattern.findall(str(value)):
@@ -258,7 +274,7 @@ def generate_env_file(scenario: dict[str, Any]) -> str:
 
 def main():
     parser = argparse.ArgumentParser(description="Generate Docker Compose from scenario.toml")
-    parser.add_argument("--scenario", type=Path)
+    parser.add_argument("--scenario", type=Path, required=True)
     args = parser.parse_args()
 
     if not args.scenario.exists():
@@ -267,19 +283,20 @@ def main():
 
     scenario = parse_scenario(args.scenario)
 
-    with open(COMPOSE_PATH, "w") as f:
+    with open(COMPOSE_PATH, "w", encoding="utf-8") as f:
         f.write(generate_docker_compose(scenario))
 
-    with open(A2A_SCENARIO_PATH, "w") as f:
+    with open(A2A_SCENARIO_PATH, "w", encoding="utf-8") as f:
         f.write(generate_a2a_scenario(scenario))
 
     env_content = generate_env_file(scenario)
     if env_content:
-        with open(ENV_PATH, "w") as f:
+        with open(ENV_PATH, "w", encoding="utf-8") as f:
             f.write(env_content)
         print(f"Generated {ENV_PATH}")
 
     print(f"Generated {COMPOSE_PATH} and {A2A_SCENARIO_PATH}")
+
 
 if __name__ == "__main__":
     main()
