@@ -27,7 +27,7 @@ jobs:
       - name: Install compose generator deps
         run: |
           python -m pip install --upgrade pip
-          python -m pip install tomli-w
+          python -m pip install tomli-w requests
 
       - name: Generate docker-compose.yml from scenario.toml
         run: |
