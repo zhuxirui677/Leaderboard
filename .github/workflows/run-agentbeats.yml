@@ -40,12 +40,12 @@ jobs:
         run: |
           docker compose -f docker-compose.yml pull
       
-      - name: Start all services and wait for health
+      - name: Start agent services (without client)
         env:
           ZHIPUAI_API_KEY: ${{ secrets.ZHIPUAI_API_KEY }}
         run: |
-          echo "Starting all services in detached mode..."
-          docker compose -f docker-compose.yml up -d
+          echo "Starting agent services in detached mode..."
+          docker compose -f docker-compose.yml up -d green-agent purple_agent_1
           
           echo "Waiting for green-agent to be healthy..."
           for i in {1..60}; do
@@ -87,16 +87,21 @@ jobs:
           
           echo "=== All agents are healthy ==="
           docker compose -f docker-compose.yml ps
+          docker network ls
+          docker network inspect leaderboard_agent-network || true
           
-          echo "Testing green-agent endpoint..."
-          docker exec green-agent curl -f http://localhost:9009/.well-known/agent-card.json || echo "Warning: curl test failed"
+          echo "Testing green-agent endpoint from host..."
+          docker exec green-agent curl -f http://localhost:9009/.well-known/agent-card.json || echo "Warning: localhost test failed"
+          
+          echo "Testing green-agent endpoint via container network..."
+          docker run --rm --network leaderboard_agent-network curlimages/curl:latest curl -f http://green-agent:9009/.well-known/agent-card.json || echo "Warning: network test failed"
       
-      - name: Run AgentBeats client
+      - name: Run evaluation with all services
         env:
           ZHIPUAI_API_KEY: ${{ secrets.ZHIPUAI_API_KEY }}
         run: |
-          echo "Starting agentbeats-client (agents already running)..."
-          docker compose -f docker-compose.yml run --rm agentbeats-client
+          echo "Starting complete evaluation (agents + client)..."
+          docker compose -f docker-compose.yml up --timestamps --no-color --exit-code-from agentbeats-client --abort-on-container-exit
       
       - name: Show logs on failure
         if: failure()
@@ -109,6 +114,9 @@ jobs:
           echo ""
           echo "=== agentbeats-client logs ==="
           docker compose -f docker-compose.yml logs agentbeats-client
+          echo ""
+          echo "=== Network info ==="
+          docker network inspect leaderboard_agent-network || true
       
       - name: Stop all services
         if: always()
