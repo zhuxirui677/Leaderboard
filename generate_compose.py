@@ -67,6 +67,8 @@ services:
     platform: linux/amd64
     container_name: green-agent
     command: ["--host", "0.0.0.0", "--port", "{green_port}"]
+    ports:
+      - "{green_port}:{green_port}"
     environment:{green_env}
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:{green_port}/.well-known/agent-card.json"]
@@ -103,6 +105,8 @@ PARTICIPANT_TEMPLATE = """  {name}:
     platform: linux/amd64
     container_name: {name}
     command: ["--host", "0.0.0.0", "--port", "{port}"]
+    ports:
+      - "{port}:{port}"
     environment:{env}
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:{port}/.well-known/agent-card.json"]
