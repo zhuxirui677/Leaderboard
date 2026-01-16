@@ -1,11 +1,12 @@
 [green_agent]
-image = "ghcr.io/green-agent-of-legalagentbench/agent:latest"
+agentbeats_id = "019bc145-7c61-7f31-b871-06a84478ead8"
 env = { ZHIPUAI_API_KEY = "${ZHIPUAI_API_KEY}", LOG_LEVEL = "INFO" }
 
 [[participants]]
-image = "ghcr.io/zhuxirui677/law-purple-agent:latest"
+agentbeats_id = "019bc40a-9f04-73d3-834f-30763fce76aa"
 name = "lawlawlaw"
 env = {}
 
 [config]
-message = "Test legal evaluation request"
+task = "legal_consultation"
+num_cases = 3
