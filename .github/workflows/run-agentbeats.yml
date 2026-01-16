@@ -1,0 +1,35 @@
+name: Run AgentBeats Evaluation
+
+on:
+  workflow_dispatch:   # 手动点击 Run
+  push:
+    branches: ["main"]
+
+jobs:
+  run-agentbeats:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Docker
+        uses: docker/setup-buildx-action@v3
+
+      - name: Pull images
+        run: |
+          docker compose pull
+
+      - name: Run AgentBeats
+        env:
+          ZHIPUAI_API_KEY: ${{ secrets.ZHIPUAI_API_KEY }}
+        run: |
+          docker compose up --timestamps --no-color --exit-code-from agentbeats-client --abort-on-container-exit
+
+      - name: Upload results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: agentbeats-results
+          path: output/
