@@ -8,8 +8,4 @@ name = "lawlawlaw"
 env = {}
 
 [config]
-case_id = "test_case_1"
-# 或者根据 LegalAgentBench 的文档添加其他必要参数
-# 例如：
-# benchmark = "legal_qa"
-# task_type = "consultation"
+message = "Test legal evaluation request"
