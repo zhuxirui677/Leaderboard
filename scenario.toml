@@ -1,10 +1,10 @@
 [green_agent]
-agentbeats_id = "019bc145-7c61-7f31-b871-06a84478ead8"
+image = "ghcr.io/green-agent-of-legalagentbench/agent:latest"
 env = { ZHIPUAI_API_KEY = "${ZHIPUAI_API_KEY}", LOG_LEVEL = "INFO" }
 
 [[participants]]
-agentbeats_id = "019bc40a-9f04-73d3-834f-30763fce76aa"
-name = "purple_agent_1"
+image = "ghcr.io/zhuxirui677/law-purple-agent:latest"
+name = "lawlawlaw"
 env = {}
 
 [config]
