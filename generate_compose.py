@@ -68,7 +68,7 @@ services:
     container_name: green-agent
     command: ["--host", "0.0.0.0", "--port", "{green_port}"]
     ports:
-      - "{green_port}:{green_port}"
+      - "9009:{green_port}"
     environment:{green_env}
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:{green_port}/.well-known/agent-card.json"]
@@ -106,7 +106,7 @@ PARTICIPANT_TEMPLATE = """  {name}:
     container_name: {name}
     command: ["--host", "0.0.0.0", "--port", "{port}"]
     ports:
-      - "{port}:{port}"
+      - "{host_port}:{port}"
     environment:{env}
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:{port}/.well-known/agent-card.json"]
@@ -146,6 +146,7 @@ def resolve_image(agent: dict, name: str) -> None:
     else:
         print(f"Error: {name} must have either 'image' or 'agentbeats_id' field")
         sys.exit(1)
+
 
 def parse_scenario(scenario_path: Path) -> dict[str, Any]:
     toml_data = scenario_path.read_text()
@@ -193,17 +194,20 @@ def generate_docker_compose(scenario: dict[str, Any]) -> str:
 
     participant_names = [p["name"] for p in participants]
 
-    participant_services = "\n".join(
-        [
-            PARTICIPANT_TEMPLATE.format(
-                name=p["name"],
-                image=p["image"],
-                port=DEFAULT_PORT,
-                env=format_env_vars(p.get("env", {})),
-            )
-            for p in participants
-        ]
-    )
+    # Generate participant services with incremental host ports
+    participant_services_list = []
+    for idx, p in enumerate(participants):
+        host_port = 9010 + idx  # Start from 9010 for first participant
+        service = PARTICIPANT_TEMPLATE.format(
+            name=p["name"],
+            image=p["image"],
+            port=DEFAULT_PORT,
+            host_port=host_port,
+            env=format_env_vars(p.get("env", {})),
+        )
+        participant_services_list.append(service)
+    
+    participant_services = "\n".join(participant_services_list)
 
     all_services = ["green-agent"] + participant_names
 
