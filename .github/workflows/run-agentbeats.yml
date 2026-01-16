@@ -3,10 +3,12 @@ on:
   workflow_dispatch:
   push:
     branches: ["main"]
+
 jobs:
   run-agentbeats:
     runs-on: ubuntu-latest
     timeout-minutes: 60
+    
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
@@ -31,56 +33,87 @@ jobs:
           python generate_compose.py --scenario scenario.toml
           ls -la
           test -f docker-compose.yml
+          echo "=== Generated docker-compose.yml ==="
+          cat docker-compose.yml
       
       - name: Pull images
         run: |
           docker compose -f docker-compose.yml pull
       
-      - name: Start agents and wait for health
-        run: |
-          echo "Starting all agent services..."
-          docker compose -f docker-compose.yml up -d green-agent
-          
-          echo "Waiting for green-agent to be healthy..."
-          timeout=60
-          elapsed=0
-          while [ $elapsed -lt $timeout ]; do
-            if docker compose -f docker-compose.yml ps green-agent | grep -q "healthy"; then
-              echo "✅ green-agent is healthy!"
-              break
-            fi
-            echo "Waiting... ($elapsed/$timeout seconds)"
-            sleep 2
-            elapsed=$((elapsed + 2))
-          done
-          
-          if [ $elapsed -ge $timeout ]; then
-            echo "❌ green-agent failed to become healthy"
-            docker compose -f docker-compose.yml logs green-agent
-            exit 1
-          fi
-          
-          echo "Starting participant agents..."
-          docker compose -f docker-compose.yml up -d
-          
-          echo "Waiting for all services to be healthy..."
-          sleep 10
-          docker compose -f docker-compose.yml ps
-      
-      - name: Run AgentBeats evaluation
+      - name: Start all services and wait for health
         env:
           ZHIPUAI_API_KEY: ${{ secrets.ZHIPUAI_API_KEY }}
         run: |
-          echo "Starting agentbeats-client..."
-          docker compose -f docker-compose.yml up --timestamps --no-color --exit-code-from agentbeats-client --abort-on-container-exit
+          echo "Starting all services in detached mode..."
+          docker compose -f docker-compose.yml up -d
+          
+          echo "Waiting for green-agent to be healthy..."
+          for i in {1..60}; do
+            status=$(docker inspect --format='{{.State.Health.Status}}' green-agent 2>/dev/null || echo "not_found")
+            echo "Attempt $i/60: green-agent status = $status"
+            
+            if [ "$status" = "healthy" ]; then
+              echo "✅ green-agent is healthy!"
+              break
+            fi
+            
+            if [ $i -eq 60 ]; then
+              echo "❌ Timeout waiting for green-agent"
+              docker compose -f docker-compose.yml logs green-agent
+              exit 1
+            fi
+            
+            sleep 2
+          done
+          
+          echo "Waiting for purple_agent_1 to be healthy..."
+          for i in {1..30}; do
+            status=$(docker inspect --format='{{.State.Health.Status}}' purple_agent_1 2>/dev/null || echo "not_found")
+            echo "Attempt $i/30: purple_agent_1 status = $status"
+            
+            if [ "$status" = "healthy" ]; then
+              echo "✅ purple_agent_1 is healthy!"
+              break
+            fi
+            
+            if [ $i -eq 30 ]; then
+              echo "❌ Timeout waiting for purple_agent_1"
+              docker compose -f docker-compose.yml logs purple_agent_1
+              exit 1
+            fi
+            
+            sleep 2
+          done
+          
+          echo "=== All agents are healthy ==="
+          docker compose -f docker-compose.yml ps
+          
+          echo "Testing green-agent endpoint..."
+          docker exec green-agent curl -f http://localhost:9009/.well-known/agent-card.json || echo "Warning: curl test failed"
+      
+      - name: Run AgentBeats client
+        env:
+          ZHIPUAI_API_KEY: ${{ secrets.ZHIPUAI_API_KEY }}
+        run: |
+          echo "Starting agentbeats-client (agents already running)..."
+          docker compose -f docker-compose.yml run --rm agentbeats-client
       
       - name: Show logs on failure
         if: failure()
         run: |
           echo "=== green-agent logs ==="
           docker compose -f docker-compose.yml logs green-agent
+          echo ""
+          echo "=== purple_agent_1 logs ==="
+          docker compose -f docker-compose.yml logs purple_agent_1
+          echo ""
           echo "=== agentbeats-client logs ==="
           docker compose -f docker-compose.yml logs agentbeats-client
+      
+      - name: Stop all services
+        if: always()
+        run: |
+          docker compose -f docker-compose.yml down
       
       - name: Upload results
         if: always()
