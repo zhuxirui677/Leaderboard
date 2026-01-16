@@ -89,32 +89,3 @@ jobs:
         with:
           name: agentbeats-results
           path: output/
-```
-
----
-
-## 关键改动
-
-1. **删除了分步启动** - 不再先启动 agents 再启动 client
-2. **直接运行 `docker compose up`** - 让 Docker Compose 自己管理依赖和启动顺序
-3. **添加了 `.env` 文件生成** - 从 secrets 导出环境变量
-4. **简化了整个流程** - 和官方示例保持一致
-
----
-
-## 为什么这样能解决问题
-
-你之前的方式：
-```
-1. 启动 green-agent 和 lawlawlaw (detached)
-2. 等健康检查通过
-3. 再运行 docker compose up (会重新创建容器？)
-```
-
-可能导致网络状态混乱或容器被重新创建。
-
-新方式：
-```
-1. 直接 docker compose up 所有服务
-2. Docker Compose 自己处理 depends_on 和健康检查
-3. 一次性启动，状态清晰
