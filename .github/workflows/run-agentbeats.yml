@@ -99,6 +99,28 @@ jobs:
             -d '{"jsonrpc":"2.0","id":1,"method":"ping","params":{}}' \
             || echo "Warning: POST test failed"
       
+      - name: Test full message/send request
+        run: |
+          echo "=== Testing complete message/send request ==="
+          docker run --rm --network leaderboard_agent-network curlimages/curl:latest \
+            curl -v -X POST http://green-agent:9009/ \
+            -H "Content-Type: application/json" \
+            -d '{
+              "jsonrpc": "2.0",
+              "id": 1,
+              "method": "message/send",
+              "params": {
+                "message": {
+                  "parts": [
+                    {
+                      "kind": "text",
+                      "text": "Test evaluation request from workflow"
+                    }
+                  ]
+                }
+              }
+            }'
+      
       - name: Run evaluation with all services
         env:
           ZHIPUAI_API_KEY: ${{ secrets.ZHIPUAI_API_KEY }}
