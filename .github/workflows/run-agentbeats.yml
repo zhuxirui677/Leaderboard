@@ -1,4 +1,5 @@
 name: Run AgentBeats Evaluation
+
 on:
   workflow_dispatch:
   push:
@@ -8,15 +9,13 @@ jobs:
   run-agentbeats:
     runs-on: ubuntu-latest
     timeout-minutes: 60
+    permissions:
+      contents: write
+      packages: read
     
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
-      
-      - name: Show files (debug)
-        run: |
-          pwd
-          ls -la
       
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -31,119 +30,58 @@ jobs:
       - name: Generate docker-compose.yml from scenario.toml
         run: |
           python generate_compose.py --scenario scenario.toml
-          ls -la
-          test -f docker-compose.yml
-          test -f a2a-scenario.toml
           echo "=== Generated docker-compose.yml ==="
           cat docker-compose.yml
           echo ""
           echo "=== Generated a2a-scenario.toml ==="
           cat a2a-scenario.toml
       
-      - name: Pull images
-        run: |
-          docker compose -f docker-compose.yml pull
+      - name: Create output directory
+        run: mkdir -p output && chmod 777 output
       
-      - name: Start agent services (without client)
+      - name: Export secrets as environment variables
         env:
-          ZHIPUAI_API_KEY: ${{ secrets.ZHIPUAI_API_KEY }}
+          SECRETS_JSON: ${{ toJSON(secrets) }}
         run: |
-          echo "Starting agent services in detached mode..."
-          docker compose -f docker-compose.yml up -d green-agent lawlawlaw
-          
-          echo "Waiting for green-agent to be healthy..."
-          for i in {1..60}; do
-            status=$(docker inspect --format='{{.State.Health.Status}}' green-agent 2>/dev/null || echo "not_found")
-            echo "Attempt $i/60: green-agent status = $status"
-            
-            if [ "$status" = "healthy" ]; then
-              echo "✅ green-agent is healthy!"
-              break
-            fi
-            
-            if [ $i -eq 60 ]; then
-              echo "❌ Timeout waiting for green-agent"
-              docker compose -f docker-compose.yml logs green-agent
-              exit 1
-            fi
-            
-            sleep 2
-          done
-          
-          echo "Waiting for lawlawlaw to be healthy..."
-          for i in {1..30}; do
-            status=$(docker inspect --format='{{.State.Health.Status}}' lawlawlaw 2>/dev/null || echo "not_found")
-            echo "Attempt $i/30: lawlawlaw status = $status"
-            
-            if [ "$status" = "healthy" ]; then
-              echo "✅ lawlawlaw is healthy!"
-              break
-            fi
-            
-            if [ $i -eq 30 ]; then
-              echo "❌ Timeout waiting for lawlawlaw"
-              docker compose -f docker-compose.yml logs lawlawlaw
-              exit 1
-            fi
-            
-            sleep 2
-          done
-          
-          echo "=== All agents are healthy ==="
-          docker compose -f docker-compose.yml ps
-          
-          echo "Testing green-agent POST endpoint..."
-          docker run --rm --network leaderboard_agent-network curlimages/curl:latest \
-            curl -f -X POST http://green-agent:9009/ \
-            -H "Content-Type: application/json" \
-            -d '{"jsonrpc":"2.0","id":1,"method":"ping","params":{}}' \
-            || echo "Warning: POST test failed"
+          echo "$SECRETS_JSON" | jq -r 'to_entries|map("\(.key)=\(.value)")|.[]' > .env
       
-      - name: Test full message/send request
-        run: |
-          echo "=== Testing complete message/send request ==="
-          docker run --rm --network leaderboard_agent-network curlimages/curl:latest \
-            curl -v -X POST http://green-agent:9009/ \
-            -H "Content-Type: application/json" \
-            -d '{
-              "jsonrpc": "2.0",
-              "id": 1,
-              "method": "message/send",
-              "params": {
-                "message": {
-                  "parts": [
-                    {
-                      "kind": "text",
-                      "text": "Test evaluation request from workflow"
-                    }
-                  ]
-                }
-              }
-            }'
-      
-      - name: Run evaluation with all services
+      - name: Check if GHCR_TOKEN is available
+        id: check_ghcr
         env:
-          ZHIPUAI_API_KEY: ${{ secrets.ZHIPUAI_API_KEY }}
+          GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          echo "Starting complete evaluation (agents + client)..."
-          docker compose -f docker-compose.yml up --timestamps --no-color --exit-code-from agentbeats-client --abort-on-container-exit
+          if [ -n "$GHCR_TOKEN" ]; then
+            echo "has_token=true" >> $GITHUB_OUTPUT
+          else
+            echo "has_token=false" >> $GITHUB_OUTPUT
+          fi
+      
+      - name: Login to GitHub Container Registry
+        if: steps.check_ghcr.outputs.has_token == 'true'
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Run assessment
+        run: docker compose up --timestamps --no-color --exit-code-from agentbeats-client --abort-on-container-exit
       
       - name: Show logs on failure
         if: failure()
         run: |
           echo "=== green-agent logs ==="
-          docker compose -f docker-compose.yml logs green-agent
+          docker compose logs green-agent
           echo ""
           echo "=== lawlawlaw logs ==="
-          docker compose -f docker-compose.yml logs lawlawlaw
+          docker compose logs lawlawlaw
           echo ""
           echo "=== agentbeats-client logs ==="
-          docker compose -f docker-compose.yml logs agentbeats-client
+          docker compose logs agentbeats-client
       
-      - name: Stop all services
+      - name: Cleanup
         if: always()
-        run: |
-          docker compose -f docker-compose.yml down
+        run: docker compose down -v || true
       
       - name: Upload results
         if: always()
@@ -151,3 +89,32 @@ jobs:
         with:
           name: agentbeats-results
           path: output/
+```
+
+---
+
+## 关键改动
+
+1. **删除了分步启动** - 不再先启动 agents 再启动 client
+2. **直接运行 `docker compose up`** - 让 Docker Compose 自己管理依赖和启动顺序
+3. **添加了 `.env` 文件生成** - 从 secrets 导出环境变量
+4. **简化了整个流程** - 和官方示例保持一致
+
+---
+
+## 为什么这样能解决问题
+
+你之前的方式：
+```
+1. 启动 green-agent 和 lawlawlaw (detached)
+2. 等健康检查通过
+3. 再运行 docker compose up (会重新创建容器？)
+```
+
+可能导致网络状态混乱或容器被重新创建。
+
+新方式：
+```
+1. 直接 docker compose up 所有服务
+2. Docker Compose 自己处理 depends_on 和健康检查
+3. 一次性启动，状态清晰
