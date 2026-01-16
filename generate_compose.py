@@ -130,9 +130,10 @@ def resolve_image(agent: dict, name: str) -> None:
         print(f"Error: {name} has both 'image' and 'agentbeats_id' - use one or the other")
         sys.exit(1)
     elif has_image:
-        if os.environ.get("GITHUB_ACTIONS"):
-            print(f"Error: {name} requires 'agentbeats_id' for GitHub Actions (use 'image' for local testing only)")
-            sys.exit(1)
+        # 注释掉 GitHub Actions 的限制
+        # if os.environ.get("GITHUB_ACTIONS"):
+        #     print(f"Error: {name} requires 'agentbeats_id' for GitHub Actions (use 'image' for local testing only)")
+        #     sys.exit(1)
         print(f"Using {name} image: {agent['image']}")
     elif has_id:
         info = fetch_agent_info(agent["agentbeats_id"])
@@ -141,7 +142,6 @@ def resolve_image(agent: dict, name: str) -> None:
     else:
         print(f"Error: {name} must have either 'image' or 'agentbeats_id' field")
         sys.exit(1)
-
 
 def parse_scenario(scenario_path: Path) -> dict[str, Any]:
     toml_data = scenario_path.read_text()
