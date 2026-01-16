@@ -49,7 +49,7 @@ jobs:
           ZHIPUAI_API_KEY: ${{ secrets.ZHIPUAI_API_KEY }}
         run: |
           echo "Starting agent services in detached mode..."
-          docker compose -f docker-compose.yml up -d green-agent purple_agent_1
+          docker compose -f docker-compose.yml up -d green-agent lawlawlaw
           
           echo "Waiting for green-agent to be healthy..."
           for i in {1..60}; do
@@ -70,19 +70,19 @@ jobs:
             sleep 2
           done
           
-          echo "Waiting for purple_agent_1 to be healthy..."
+          echo "Waiting for lawlawlaw to be healthy..."
           for i in {1..30}; do
-            status=$(docker inspect --format='{{.State.Health.Status}}' purple_agent_1 2>/dev/null || echo "not_found")
-            echo "Attempt $i/30: purple_agent_1 status = $status"
+            status=$(docker inspect --format='{{.State.Health.Status}}' lawlawlaw 2>/dev/null || echo "not_found")
+            echo "Attempt $i/30: lawlawlaw status = $status"
             
             if [ "$status" = "healthy" ]; then
-              echo "✅ purple_agent_1 is healthy!"
+              echo "✅ lawlawlaw is healthy!"
               break
             fi
             
             if [ $i -eq 30 ]; then
-              echo "❌ Timeout waiting for purple_agent_1"
-              docker compose -f docker-compose.yml logs purple_agent_1
+              echo "❌ Timeout waiting for lawlawlaw"
+              docker compose -f docker-compose.yml logs lawlawlaw
               exit 1
             fi
             
@@ -112,8 +112,8 @@ jobs:
           echo "=== green-agent logs ==="
           docker compose -f docker-compose.yml logs green-agent
           echo ""
-          echo "=== purple_agent_1 logs ==="
-          docker compose -f docker-compose.yml logs purple_agent_1
+          echo "=== lawlawlaw logs ==="
+          docker compose -f docker-compose.yml logs lawlawlaw
           echo ""
           echo "=== agentbeats-client logs ==="
           docker compose -f docker-compose.yml logs agentbeats-client
