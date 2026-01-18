@@ -12,4 +12,4 @@ but docker didn't update
 try: -->
 docker-compose down
 docker rmi ghcr.io/green-agent-of-legalagentbench/agent:latest
-
+trigger
