@@ -1,0 +1,90 @@
+{
+  "participants": {
+    "lawlawlaw": "019bc40a-9f04-73d3-834f-30763fce76aa"
+  },
+  "results": [
+    {
+      "task_id": "task_eb88a55fbb4b4d098ed89913fa29a169",
+      "status": "error",
+      "error": "dataset not found: data/dataset_test.json",
+      "updates": [
+        {
+          "task_id": "task_eb88a55fbb4b4d098ed89913fa29a169",
+          "type": "log",
+          "message": "assessment_started",
+          "data": {
+            "participants": [
+              "lawlawlaw"
+            ]
+          },
+          "ts": 1768760149.6020002
+        },
+        {
+          "task_id": "task_eb88a55fbb4b4d098ed89913fa29a169",
+          "type": "log",
+          "message": "loading_dataset",
+          "data": {
+            "dataset_path": "data/dataset_test.json",
+            "max_items": 3
+          },
+          "ts": 1768760149.6020126
+        },
+        {
+          "task_id": "task_eb88a55fbb4b4d098ed89913fa29a169",
+          "type": "warning",
+          "message": "assessment_failed",
+          "data": {
+            "error": "dataset not found: data/dataset_test.json"
+          },
+          "ts": 1768760149.6020746
+        }
+      ],
+      "artifacts": [
+        {
+          "name": "task_updates.json",
+          "mime_type": "application/json",
+          "data": [
+            {
+              "task_id": "task_eb88a55fbb4b4d098ed89913fa29a169",
+              "type": "log",
+              "message": "assessment_started",
+              "data": {
+                "participants": [
+                  "lawlawlaw"
+                ]
+              },
+              "ts": 1768760149.6020002
+            },
+            {
+              "task_id": "task_eb88a55fbb4b4d098ed89913fa29a169",
+              "type": "log",
+              "message": "loading_dataset",
+              "data": {
+                "dataset_path": "data/dataset_test.json",
+                "max_items": 3
+              },
+              "ts": 1768760149.6020126
+            },
+            {
+              "task_id": "task_eb88a55fbb4b4d098ed89913fa29a169",
+              "type": "warning",
+              "message": "assessment_failed",
+              "data": {
+                "error": "dataset not found: data/dataset_test.json"
+              },
+              "ts": 1768760149.6020746
+            }
+          ]
+        },
+        {
+          "name": "error.json",
+          "mime_type": "application/json",
+          "data": {
+            "error": "dataset not found: data/dataset_test.json"
+          }
+        }
+      ],
+      "context_id": null
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "image_digests": {
+    "green-agent": "ghcr.io/green-agent-of-legalagentbench/agent@sha256:d42cb10ee44bb18e15a3fe8ced602712e5c1cdfb4885b26b9c4055413f87fabc",
+    "lawlawlaw": "ghcr.io/zhuxirui677/law-purple-agent@sha256:c9c33fd5a78c803fe2139e5bb7816f8d4ca55de01aefbfdbf46722f36c58d113",
+    "agentbeats-client": "ghcr.io/agentbeats/agentbeats-client@sha256:13dfe3ef4e583a80e7ce2fe3becd0ce3b879841368a7f4fa40b6ebbabeeb014e"
+  },
+  "timestamp": "2026-01-18T18:15:50Z",
+  "github_actions": {
+    "run_url": "https://github.com/zhuxirui677/Leaderboard/actions/runs/21116359046",
+    "run_logs_url": "https://api.github.com/repos/zhuxirui677/Leaderboard/actions/runs/21116359046/logs",
+    "ref": "refs/heads/main",
+    "sha": "60ab6571edb14a899d9a4213f38600f55055ce6a",
+    "repository_url": "https://github.com/zhuxirui677/Leaderboard",
+    "workflow_ref": "zhuxirui677/Leaderboard/.github/workflows/run-scenario.yml@refs/heads/main",
+    "workflow_sha": "60ab6571edb14a899d9a4213f38600f55055ce6a"
+  }
+}

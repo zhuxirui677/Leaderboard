@@ -1,0 +1,14 @@
+[green_agent]
+agentbeats_id = "019bc145-7c61-7f31-b871-06a84478ead8"
+env = { ZHIPUAI_API_KEY = "${ZHIPUAI_API_KEY}", LOG_LEVEL = "INFO", AGENT_URL = "http://green-agent:9009", URL = "http://green-agent:9009" }
+
+[[participants]]
+agentbeats_id = "019bc40a-9f04-73d3-834f-30763fce76aa"
+name = "lawlawlaw"
+env = {}
+
+[config]
+task = "legal_consultation"
+num_cases = 3
+dataset_path = "data/dataset_test.json"
+max_items = 3
