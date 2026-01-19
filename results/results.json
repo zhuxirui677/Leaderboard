@@ -4,7 +4,7 @@
   },
   "results": [
     {
-      "task_id": "task_e37b6b12f1c74b928b07810da32f92c3",
+      "task_id": "task_3df682806372485b9029018cd234f547",
       "status": "ok",
       "results": {
         "n": 3,
@@ -94,7 +94,7 @@
           "mime_type": "application/json",
           "data": [
             {
-              "task_id": "task_e37b6b12f1c74b928b07810da32f92c3",
+              "task_id": "task_3df682806372485b9029018cd234f547",
               "type": "log",
               "message": "assessment_started",
               "data": {
@@ -102,47 +102,47 @@
                   "lawlawlaw"
                 ]
               },
-              "ts": 1768780400.296434
+              "ts": 1768809008.6768312
             },
             {
-              "task_id": "task_e37b6b12f1c74b928b07810da32f92c3",
+              "task_id": "task_3df682806372485b9029018cd234f547",
               "type": "log",
               "message": "loading_dataset",
               "data": {
                 "dataset_path": "data/dataset_test.json",
                 "max_items": 3
               },
-              "ts": 1768780400.29644
+              "ts": 1768809008.676837
             },
             {
-              "task_id": "task_e37b6b12f1c74b928b07810da32f92c3",
+              "task_id": "task_3df682806372485b9029018cd234f547",
               "type": "progress",
               "message": "scoring_item",
               "data": {
                 "index": 0
               },
-              "ts": 1768780400.2966387
+              "ts": 1768809008.6773384
             },
             {
-              "task_id": "task_e37b6b12f1c74b928b07810da32f92c3",
+              "task_id": "task_3df682806372485b9029018cd234f547",
               "type": "progress",
               "message": "scoring_item",
               "data": {
                 "index": 1
               },
-              "ts": 1768780404.9315152
+              "ts": 1768809012.2747247
             },
             {
-              "task_id": "task_e37b6b12f1c74b928b07810da32f92c3",
+              "task_id": "task_3df682806372485b9029018cd234f547",
               "type": "progress",
               "message": "scoring_item",
               "data": {
                 "index": 2
               },
-              "ts": 1768780408.8068078
+              "ts": 1768809015.1237671
             },
             {
-              "task_id": "task_e37b6b12f1c74b928b07810da32f92c3",
+              "task_id": "task_3df682806372485b9029018cd234f547",
               "type": "log",
               "message": "assessment_complete",
               "data": {
@@ -157,14 +157,14 @@
                   "RED": 0
                 }
               },
-              "ts": 1768780413.1696498
+              "ts": 1768809019.569925
             }
           ]
         }
       ],
       "updates": [
         {
-          "task_id": "task_e37b6b12f1c74b928b07810da32f92c3",
+          "task_id": "task_3df682806372485b9029018cd234f547",
           "type": "log",
           "message": "assessment_started",
           "data": {
@@ -172,47 +172,47 @@
               "lawlawlaw"
             ]
           },
-          "ts": 1768780400.296434
+          "ts": 1768809008.6768312
         },
         {
-          "task_id": "task_e37b6b12f1c74b928b07810da32f92c3",
+          "task_id": "task_3df682806372485b9029018cd234f547",
           "type": "log",
           "message": "loading_dataset",
           "data": {
             "dataset_path": "data/dataset_test.json",
             "max_items": 3
           },
-          "ts": 1768780400.29644
+          "ts": 1768809008.676837
         },
         {
-          "task_id": "task_e37b6b12f1c74b928b07810da32f92c3",
+          "task_id": "task_3df682806372485b9029018cd234f547",
           "type": "progress",
           "message": "scoring_item",
           "data": {
             "index": 0
           },
-          "ts": 1768780400.2966387
+          "ts": 1768809008.6773384
         },
         {
-          "task_id": "task_e37b6b12f1c74b928b07810da32f92c3",
+          "task_id": "task_3df682806372485b9029018cd234f547",
           "type": "progress",
           "message": "scoring_item",
           "data": {
             "index": 1
           },
-          "ts": 1768780404.9315152
+          "ts": 1768809012.2747247
         },
         {
-          "task_id": "task_e37b6b12f1c74b928b07810da32f92c3",
+          "task_id": "task_3df682806372485b9029018cd234f547",
           "type": "progress",
           "message": "scoring_item",
           "data": {
             "index": 2
           },
-          "ts": 1768780408.8068078
+          "ts": 1768809015.1237671
         },
         {
-          "task_id": "task_e37b6b12f1c74b928b07810da32f92c3",
+          "task_id": "task_3df682806372485b9029018cd234f547",
           "type": "log",
           "message": "assessment_complete",
           "data": {
@@ -227,7 +227,7 @@
               "RED": 0
             }
           },
-          "ts": 1768780413.1696498
+          "ts": 1768809019.569925
         }
       ],
       "context_id": null
