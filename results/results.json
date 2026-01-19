@@ -7,7 +7,6 @@
       "task_id": "task_5f47ebce02274000abecb5e4b5e106f0",
       "status": "ok",
 
-      // ✅ 关键：把 summary 常用字段抬到这一层（每条 run 的顶层）
       "n": 3,
       "avg_success": 1.0,
       "avg_process": 1.0,
@@ -26,7 +25,7 @@
         "RED": 0.0
       },
 
-      // ✅ 原始结构保留（不影响）
+   
       "results": {
         "n": 3,
         "avg_success": 1.0,
