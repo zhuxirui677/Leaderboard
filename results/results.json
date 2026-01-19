@@ -4,7 +4,7 @@
   },
   "results": [
     {
-      "task_id": "task_92c2c30e227944a6a81491d220e84a8d",
+      "task_id": "task_5f47ebce02274000abecb5e4b5e106f0",
       "status": "ok",
       "results": {
         "n": 3,
@@ -16,7 +16,14 @@
           "GREEN": 3,
           "YELLOW": 0,
           "RED": 0
-        }
+        },
+        "traffic_light_total": 3,
+        "traffic_light_ratios": {
+          "GREEN": 1.0,
+          "YELLOW": 0.0,
+          "RED": 0.0
+        },
+        "traffic_light_green_pct": 100.0
       },
       "artifacts": [
         {
@@ -32,7 +39,14 @@
               "GREEN": 3,
               "YELLOW": 0,
               "RED": 0
-            }
+            },
+            "traffic_light_total": 3,
+            "traffic_light_ratios": {
+              "GREEN": 1.0,
+              "YELLOW": 0.0,
+              "RED": 0.0
+            },
+            "traffic_light_green_pct": 100.0
           }
         },
         {
@@ -94,7 +108,7 @@
           "mime_type": "application/json",
           "data": [
             {
-              "task_id": "task_92c2c30e227944a6a81491d220e84a8d",
+              "task_id": "task_5f47ebce02274000abecb5e4b5e106f0",
               "type": "log",
               "message": "assessment_started",
               "data": {
@@ -102,47 +116,47 @@
                   "lawlawlaw"
                 ]
               },
-              "ts": 1768809403.7730067
+              "ts": 1768857448.811882
             },
             {
-              "task_id": "task_92c2c30e227944a6a81491d220e84a8d",
+              "task_id": "task_5f47ebce02274000abecb5e4b5e106f0",
               "type": "log",
               "message": "loading_dataset",
               "data": {
                 "dataset_path": "data/dataset_test.json",
                 "max_items": 3
               },
-              "ts": 1768809403.773012
+              "ts": 1768857448.811887
             },
             {
-              "task_id": "task_92c2c30e227944a6a81491d220e84a8d",
+              "task_id": "task_5f47ebce02274000abecb5e4b5e106f0",
               "type": "progress",
               "message": "scoring_item",
               "data": {
                 "index": 0
               },
-              "ts": 1768809403.7734785
+              "ts": 1768857448.8123524
             },
             {
-              "task_id": "task_92c2c30e227944a6a81491d220e84a8d",
+              "task_id": "task_5f47ebce02274000abecb5e4b5e106f0",
               "type": "progress",
               "message": "scoring_item",
               "data": {
                 "index": 1
               },
-              "ts": 1768809407.5370872
+              "ts": 1768857452.5466876
             },
             {
-              "task_id": "task_92c2c30e227944a6a81491d220e84a8d",
+              "task_id": "task_5f47ebce02274000abecb5e4b5e106f0",
               "type": "progress",
               "message": "scoring_item",
               "data": {
                 "index": 2
               },
-              "ts": 1768809412.232232
+              "ts": 1768857455.8117747
             },
             {
-              "task_id": "task_92c2c30e227944a6a81491d220e84a8d",
+              "task_id": "task_5f47ebce02274000abecb5e4b5e106f0",
               "type": "log",
               "message": "assessment_complete",
               "data": {
@@ -155,16 +169,23 @@
                   "GREEN": 3,
                   "YELLOW": 0,
                   "RED": 0
-                }
+                },
+                "traffic_light_total": 3,
+                "traffic_light_ratios": {
+                  "GREEN": 1.0,
+                  "YELLOW": 0.0,
+                  "RED": 0.0
+                },
+                "traffic_light_green_pct": 100.0
               },
-              "ts": 1768809417.1193137
+              "ts": 1768857460.1031024
             }
           ]
         }
       ],
       "updates": [
         {
-          "task_id": "task_92c2c30e227944a6a81491d220e84a8d",
+          "task_id": "task_5f47ebce02274000abecb5e4b5e106f0",
           "type": "log",
           "message": "assessment_started",
           "data": {
@@ -172,47 +193,47 @@
               "lawlawlaw"
             ]
           },
-          "ts": 1768809403.7730067
+          "ts": 1768857448.811882
         },
         {
-          "task_id": "task_92c2c30e227944a6a81491d220e84a8d",
+          "task_id": "task_5f47ebce02274000abecb5e4b5e106f0",
           "type": "log",
           "message": "loading_dataset",
           "data": {
             "dataset_path": "data/dataset_test.json",
             "max_items": 3
           },
-          "ts": 1768809403.773012
+          "ts": 1768857448.811887
         },
         {
-          "task_id": "task_92c2c30e227944a6a81491d220e84a8d",
+          "task_id": "task_5f47ebce02274000abecb5e4b5e106f0",
           "type": "progress",
           "message": "scoring_item",
           "data": {
             "index": 0
           },
-          "ts": 1768809403.7734785
+          "ts": 1768857448.8123524
         },
         {
-          "task_id": "task_92c2c30e227944a6a81491d220e84a8d",
+          "task_id": "task_5f47ebce02274000abecb5e4b5e106f0",
           "type": "progress",
           "message": "scoring_item",
           "data": {
             "index": 1
           },
-          "ts": 1768809407.5370872
+          "ts": 1768857452.5466876
         },
         {
-          "task_id": "task_92c2c30e227944a6a81491d220e84a8d",
+          "task_id": "task_5f47ebce02274000abecb5e4b5e106f0",
           "type": "progress",
           "message": "scoring_item",
           "data": {
             "index": 2
           },
-          "ts": 1768809412.232232
+          "ts": 1768857455.8117747
         },
         {
-          "task_id": "task_92c2c30e227944a6a81491d220e84a8d",
+          "task_id": "task_5f47ebce02274000abecb5e4b5e106f0",
           "type": "log",
           "message": "assessment_complete",
           "data": {
@@ -225,9 +246,16 @@
               "GREEN": 3,
               "YELLOW": 0,
               "RED": 0
-            }
+            },
+            "traffic_light_total": 3,
+            "traffic_light_ratios": {
+              "GREEN": 1.0,
+              "YELLOW": 0.0,
+              "RED": 0.0
+            },
+            "traffic_light_green_pct": 100.0
           },
-          "ts": 1768809417.1193137
+          "ts": 1768857460.1031024
         }
       ],
       "context_id": null
